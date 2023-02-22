@@ -1,17 +1,21 @@
 #include <math.h>
 #include <time.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include "BoardAI.h"
 
-static float minimax(Board* pb, short depth, float alpha, float beta, time_t t0);
+static float minimax(Board* pb, short depth, float alpha, float beta, TranspositionTable* table, time_t t0);
 
-//static short getMoves(Board* pb, short* moves);
+static float minimax_bad(Board* pb, short depth, float alpha, float beta, time_t t0);
 
 static float staticEvaluation(Board* pb);
 
 static float max(float x, float y);
 
 static float min(float x, float y);
+
+static bool showDepth = false;
+static bool showEval = false;
 
 short winsPerSlot[row][col] = {{3, 4, 5, 7, 5, 4, 3},
                         {4, 6, 8, 10, 8, 6, 4},
@@ -20,32 +24,37 @@ short winsPerSlot[row][col] = {{3, 4, 5, 7, 5, 4, 3},
                         {4, 6, 8, 10, 8, 6, 4},
                         {3, 4, 5, 7, 5, 4, 3}};
 
-int winValue = 1000;
+static int winValue = 1000;
 
 //how many seconds the AI has to think
 //MUST be >= 1
-short timeToThink = 5;
+static short timeToThink = 5;
+
+static short moves[row * col][col];
 
 /**
     put a piece in the column that results in the best position, return that column
 **/
-short makeAIMove(Board* pb, TranspositionTable* table){
+short makeAIMove(Board* pb, TranspositionTable* table, short use_table){
+
+    //printf("\nusing t_table: %d", use_table);
+
+    if(pb->counter <= 1){
+        makeMove(pb, 3);
+        return 3;
+    }
 
     //maxDepth starts at 42 and decreases over the course of the game.
     //maxDepth is not affected by the number of human moves,
     //so it is not perfect. maxDepth >= empty grid squares
-    short maxDepth = row * col;
+    short maxDepth = row * col - pb->counter;
 
     //hold the value of the column that yields the best move
     short bestMoveIndex = -1;
     float bestMoveValue;
 
     //retrieve the set of all possible moves and store them in moves
-    //moves is dynamically allocated and initialized with size col, then
-    //resized based on how many valid moves exist
-    short* moves = malloc(col * sizeof(short));
-    short numMoves = listMoves(pb, moves), numUnsolvedMoves = numMoves;
-    //moves = realloc(moves, numMoves * sizeof(short));
+    short numMoves = listMoves(pb, moves[0]), numUnsolvedMoves = numMoves;
 
     //keeps track of whether we should exit the loop, whether because
     //the time has expired, there is only one move left, or a win is found
@@ -74,7 +83,8 @@ short makeAIMove(Board* pb, TranspositionTable* table){
         //TODO: look into changing these values in the iterative deepening algorithm
         float alpha = -winValue, beta = winValue;
 
-        //printf("\nsearching depth %d", depth);
+        if(showDepth)
+            printf("\nsearching depth %d", depth);
 
         //in each iteration with a new depth, we assume a new index and value for
         //the best move.
@@ -87,7 +97,7 @@ short makeAIMove(Board* pb, TranspositionTable* table){
                 timeToStop = true;
                 break;
             }
-            short column = moves[i];
+            short column = moves[0][i];
             if(!solvedColumns[column]){
                 if(numUnsolvedMoves == 1){
                     //printf("\nonly 1 move");
@@ -116,20 +126,25 @@ short makeAIMove(Board* pb, TranspositionTable* table){
                     AI realizes this once it finishes searching at depth 2. When
                     using alpha and beta, it searches as long as it can to evaluate
                     the position 4, but it also returns beta for positions it
-                    hasn't fully evaluated yet (1, 5, 0 ,6). I have reverted
+                    hasn't fully evaluated yet (1, 5, 0, 6). I have reverted
                     BACK to using alpha and beta since even though it yields
                     imperfect results in situations like this, it can search
-                    much farther than with -winValue and winValue. Results:
-                    14 13 14 13 16 11 vs. 12 13 13 12 13 3 (finds win at depth
-                                                            11, finds loss at
-                                                            depth 3)
+                    much farther than with -winValue and winValue in general.
+                    Results: 14 13 14 13 16 11 vs. 12 13 13 12 13 3
+                    (finds win at depth 11, finds loss at depth 3)
                 */
                 makeMove(pb, column);
-                float temp = minimax(pb, depth - 1, alpha, beta, t0);
+                float temp;
+                if(use_table)
+                    temp = minimax(pb, depth - 1, -winValue, winValue, table, t0);
+                else
+                    temp = minimax_bad(pb, depth - 1, -winValue, winValue, t0);
+
                 //float temp = minimax(pb, depth - 1, -winValue, winValue, t0);
                 undoMove(pb);
 
-                //printf("\n%d: %f", column, temp);
+                if(showEval)
+                    printf("\n%d: %f", column, temp);
 
                 //found a winning move for self
                 if(temp / winValue == (pb->counter & 1 ? -1 : 1)){
@@ -141,7 +156,7 @@ short makeAIMove(Board* pb, TranspositionTable* table){
                 //printf("\n%lf", fabs(temp / winValue));
 
                 //found a winning move for opponent
-                if(fabs(temp / winValue) == 1){
+                else if(temp / winValue == (pb->counter & 1 ? 1 : -1)){
                     solvedColumns[column] = 1;
                     numUnsolvedMoves--;
                     //printf("\ncolumn %d: %f", column, temp);
@@ -179,9 +194,9 @@ short makeAIMove(Board* pb, TranspositionTable* table){
 
     }
 
-    free(moves);
     makeMove(pb, bestMoveIndex);
     printf("\nterminated while searching depth: %d", depth);
+    //printMap(table->hmap);
 
     //printf("\n\ntime: %lld seconds", time(NULL) - t0);
     return bestMoveIndex;
@@ -191,7 +206,7 @@ short makeAIMove(Board* pb, TranspositionTable* table){
 /**
     return value of a given board state after performing minimax with param depth
 **/
-static float minimax(Board* pb, short depth, float alpha, float beta, time_t t0){
+static float minimax(Board* pb, short depth, float alpha, float beta, TranspositionTable* table, time_t t0){
 
     if(depth <= 0 || time(NULL) - t0 >= timeToThink || winner(pb->bb[0]) || winner(pb->bb[1])){
         //printBoard(pb);
@@ -199,14 +214,110 @@ static float minimax(Board* pb, short depth, float alpha, float beta, time_t t0)
         return staticEvaluation(pb);
     }
 
-    short* moves = malloc(col * sizeof(short));
-    short numMoves = listMoves(pb, moves);
+    short numMoves = listMoves(pb, moves[depth]);
     //moves = realloc(moves, numMoves * sizeof(short));
 
     float guarantee = pb->counter & 1 ? winValue : -winValue;
+    Key key = -1, pkey = -1;
     for(int i = 0; i < numMoves; i++){
-        makeMove(pb, moves[i]);
-        float nextEval = minimax(pb, depth - 1, alpha, beta, t0);
+
+        float nextEval;
+
+        if(i == 0){
+            //fprintf(stderr, "\n%d", pb->top[moves[depth][i]] - 1);
+            pkey = zhash(table->z, pb->bb, key, (pb->top[moves[depth][i]] - 1) % 7, moves[depth][i], pb->counter & 1);
+            /*
+            if(depth > 8)
+                fprintf(stderr, "\ncomputed first hash k%lld r%d c%d p%d", pkey, (pb->top[moves[depth][i]] - 1) % 7, moves[depth][i], pb->counter & 1);
+            */
+        }
+
+        makeMove(pb, moves[depth][i]);
+
+        //fprintf(stdout, "\nd%d i%d c%d r%d p%d", depth, i, moves[depth][i], (pb->top[moves[depth][i]] - 1) % 7, pb->counter & 1);
+        key = zhash(table->z, NULL, pkey, (pb->top[moves[depth][i]] - 1) % 7, moves[depth][i], pb->counter & 1);
+        /*
+        if(depth > 8){
+            fprintf(stderr, "\ncomputed hash from previous hash k%lld r%d c%d p%d", key, (pb->top[moves[depth][i]] - 1) % 7, moves[depth][i], pb->counter & 1);
+            printBoard(pb);
+        }*/
+
+        //fprintf(stderr, "\ngetting value from hashmap");
+        HashValue* value = (HashValue*)hashGet(table->hmap, key);
+        //fprintf(stderr, "\ngot value from hashmap");
+        /*
+        if(value == NULL){
+            fprintf(stderr, "\nvalue is NULL");
+        }*/
+        if(value != NULL && value->type == exact && value->depth > depth){
+            nextEval = value->evaluation;
+            //fprintf(stderr, "\nusing hash value instead of minimax");
+        }
+        else{
+            nextEval = minimax(pb, depth - 1, alpha, beta, table, t0);
+            //fprintf(stderr, "\nminimax: %d", nextEval);
+        }
+        //nextEval = minimax(pb, depth - 1, alpha, beta, table, t0);
+
+        undoMove(pb);
+
+        guarantee = pb->counter & 1 ? min(guarantee, nextEval) : max(guarantee, nextEval);
+        if(!(pb->counter & 1))
+            alpha = max(alpha, guarantee);
+        else
+            beta = min(beta, guarantee);
+
+
+        if(value == NULL && depth > 8){
+            HashValue* h = malloc(sizeof(HashValue));
+            h->depth = depth;
+            h->evaluation = nextEval;
+            h->type = nextEval == alpha ? lower : nextEval == beta ? upper : exact;
+            HashEntry* entry = malloc(sizeof(HashEntry));
+            entry->key = key;
+            entry->value = h;
+            if(hashAdd(table->hmap, entry) == -1){
+                fprintf(stderr, "\nfailed to add to hmap");
+                free(h);
+                free(entry);
+            }
+            //printEntry(entry);
+        }
+        if(value != NULL && depth > value->depth){
+            value->depth = depth;
+            value->evaluation = nextEval;
+            value->type = nextEval == alpha ? lower : nextEval == beta ? upper : exact;
+        }
+        //printMap(table->hmap);
+
+        //removed the -1 from row computation because it's based on pb->top which has been updated after
+        //the call to undoMove
+        key = undoZHash(table->z, key, (pb->top[moves[depth][i]]) % 7, moves[depth][i], pb->counter & 1);
+
+        if(alpha > beta)
+            break;
+    }
+
+    return guarantee;
+}
+
+/**
+    return value of a given board state after performing minimax with param depth
+**/
+static float minimax_bad(Board* pb, short depth, float alpha, float beta, time_t t0){
+
+    if(depth <= 0 || time(NULL) - t0 >= timeToThink || winner(pb->bb[0]) || winner(pb->bb[1])){
+        return staticEvaluation(pb);
+    }
+
+    short numMoves = listMoves(pb, moves[depth]);
+
+    float guarantee = pb->counter & 1 ? winValue : -winValue;
+    for(int i = 0; i < numMoves; i++){
+
+        makeMove(pb, moves[depth][i]);
+
+        float nextEval = minimax_bad(pb, depth - 1, alpha, beta, t0);
         undoMove(pb);
         guarantee = pb->counter & 1 ? min(guarantee, nextEval) : max(guarantee, nextEval);
         if(!(pb->counter & 1))
@@ -217,39 +328,15 @@ static float minimax(Board* pb, short depth, float alpha, float beta, time_t t0)
             break;
     }
 
-    free(moves);
     return guarantee;
 }
 
-/**
-    return number of valid moves, store valid moves in param moves
-**/
-/*
-static short getMoves(Board* pb, short* moves){
-    short count = 0;
-    if(pb->top[3] >= 0)
-        *(moves + count++) = 3;
-    if(pb->top[2] >= 0)
-        *(moves + count++) = 2;
-    if(pb->top[4] >= 0)
-        *(moves + count++) = 4;
-    if(pb->top[1] >= 0)
-        *(moves + count++) = 1;
-    if(pb->top[5] >= 0)
-        *(moves + count++) = 5;
-    if(pb->top[0] >= 0)
-        *(moves + count++) = 0;
-    if(pb->top[6] >= 0)
-        *(moves + count++) = 6;
-    return count;
-}
-*/
 
 void createTranspositionTable(TranspositionTable* table, int n_elems){
     table->hmap = malloc(sizeof(HashMap));
     createHashMap(table->hmap, n_elems);
     table->z = malloc(sizeof(ZobristHash));
-    initializeZobristHash(table->z, 7, 6);
+    initializeZobristHash(table->z, 6, 7);
 }
 
 void destroyTranspositionTable(TranspositionTable* table){
@@ -257,22 +344,12 @@ void destroyTranspositionTable(TranspositionTable* table){
     destroyHashMap(table->hmap);
 }
 
-static float staticEvaluation(Board* pb){
+inline float staticEvaluation(Board* pb){
     if(winner(pb->bb[0])){
         return winValue;
     } else if (winner(pb->bb[1])){
         return -winValue;
     }
-
-    /*
-    float score = 0;
-    for(int c = 0; c < col; c++){
-        for(int r = pb->top[c] + 1; r < row; r++){
-            //score += pb->board[r][c] / ((min(abs(r - 3), abs(r - 2)) + 1) * (abs(c - 3) + 1));
-            score += pb->board[r][c] * winsPerSlot[r][c];
-        }
-    }
-    */
 
     float score = 0;
     for(int c = 0; c < col * col; c += col){
@@ -287,13 +364,13 @@ static float staticEvaluation(Board* pb){
 /**
     return the maximum of two floats
 **/
-static float max(float x, float y){
+inline float max(float x, float y){
     return (x > y) ? x : y;
 }
 
 /**
     return the minimum of two floats
 **/
-static float min(float x, float y){
+inline float min(float x, float y){
     return (x < y) ? x : y;
 }

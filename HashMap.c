@@ -1,5 +1,7 @@
 #include "HashMap.h"
 
+static Key absval(Key key);
+
 /**
 
     initialize the elements of the supplied hmap
@@ -31,25 +33,29 @@ float hashAdd(HashMap* hmap, HashEntry* entry){
         return 1.0f;
     }
 
-    if(hmap->entries[entry->key % hmap->n_elems] == NULL){
-        hmap->entries[entry->key % hmap->n_elems] = entry;
+    if(hmap->entries[absval(entry->key) % hmap->n_elems] == NULL){
+        hmap->entries[absval(entry->key) % hmap->n_elems] = entry;
+        return ((float)++hmap->size) / hmap->n_elems;
     }
+    return -1;
+    /*
+    //linear probing
     else{
-        for(int i = 0; i < hmap->n_elems; i++){
-            HashEntry* thing = hmap->entries[(entry->key + i) % hmap->n_elems];
+        for(int i = 1; i < hmap->n_elems; i++){
+            HashEntry* thing = hmap->entries[(absval(entry->key) + i) % hmap->n_elems];
             if(thing != NULL){
                 if(thing->key == entry->key){
                     //duplicate key is a problem, return without adding entry
-                    return ((float)++hmap->size) / hmap->n_elems;
+                    return -1;
                 }
             }
             else{
-                hmap->entries[(entry->key + i) % hmap->n_elems] = entry;
+                hmap->entries[(absval(entry->key) + i) % hmap->n_elems] = entry;
                 break;
             }
         }
     }
-    return ((float)++hmap->size) / hmap->n_elems;
+    return ((float)++hmap->size) / hmap->n_elems;*/
 
 }
 
@@ -62,10 +68,15 @@ float hashAdd(HashMap* hmap, HashEntry* entry){
 **/
 void* hashGet(HashMap* hmap, Key key){
 
+    /*
     for(int i = 0; i < hmap->n_elems; i++){
-        if(hmap->entries[(key + i) % hmap->n_elems] != NULL){
-            return hmap->entries[(key + i) % hmap->n_elems]->value;
+        if(hmap->entries[(absval(key) + i) % hmap->n_elems] != NULL && hmap->entries[(absval(key) + i) % hmap->n_elems]->key == key){
+            return hmap->entries[(absval(key) + i) % hmap->n_elems]->value;
         }
+    }
+    return NULL;*/
+    if(hmap->entries[absval(key) % hmap->n_elems] != NULL){
+        return hmap->entries[absval(key) % hmap->n_elems]->value;
     }
     return NULL;
 
@@ -95,6 +106,21 @@ void destroyHashMap(HashMap* hmap){
 
 void printEntry(HashEntry* entry){
 
-    printf("{key: %d, value: %p}\n", entry->key, entry->value);
+    printf("{key: %lld, value: %p}\n", entry->key, entry->value);
 
+}
+
+void printMap(HashMap* hmap){
+
+    for(int i = 0; i < hmap->n_elems; i++){
+        if(hmap->entries[i] != NULL){
+            printEntry(hmap->entries[i]);
+        }
+    }
+}
+
+Key absval(Key key){
+    if(key > 0)
+        return key;
+    return ~key + 1;
 }

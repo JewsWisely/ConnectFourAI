@@ -25,4 +25,6 @@ void* hashGet(HashMap* hmap, Key key);
 
 void destroyHashMap(HashMap* hmap);
 
+void printMap(HashMap* hmap);
+
 #endif // HASHMAP_H_INCLUDED

@@ -32,9 +32,9 @@ void play(Board* pb){
     do{
         if(player)
             column = makeHumanMove(pb);
-            //column = makeAIMove(pb, table);
+            //column = makeAIMove(pb, table, 1);
         else
-            column = makeAIMove(pb, table);
+            column = makeAIMove(pb, table, 0);
         player = !player;
         printf("\nchosen column: %d", column);
         printBoard(pb);
@@ -52,5 +52,17 @@ void play(Board* pb){
     }
 
     destroyTranspositionTable(table);
+
+    char c;
+    do{
+        printf("\nPlay again? (y / n)");
+        scanf("%c", &c);
+    }while(c != 'y' && c != 'n');
+
+    if(c == 'y'){
+        destroyBoard(pb);
+        createBoard(pb);
+        play(pb);
+    }
 
 }

@@ -1,5 +1,7 @@
 #include "ZobristHash.h"
+#include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 static Key randomNumber();
 

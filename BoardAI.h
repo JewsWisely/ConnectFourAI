@@ -9,14 +9,19 @@ typedef struct TranspositionTable{
     ZobristHash* z;
 } TranspositionTable;
 
+typedef enum HashType{
+    lower,
+    upper,
+    exact
+} HashType;
+
 typedef struct HashValue{
     int depth;
-    float alpha;
-    float beta;
+    HashType type;
     float evaluation;
 }HashValue;
 
-short makeAIMove(Board* pb, TranspositionTable* table);
+short makeAIMove(Board* pb, TranspositionTable* table, short use_table);
 
 void createTranspositionTable(TranspositionTable* table, int n_elems);
 
