@@ -27,13 +27,13 @@ void play(Board* pb){
     short column;
     do{
         if(player)
-            column = makeHumanMove(pb);
+            column = makeAIMove(pb);
         else
             column = makeAIMove(pb);
         player = !player;
         printf("\nchosen column: %d", column);
         printBoard(pb);
 
-    }while(!winner(pb, column) && !isTied(pb));
+    }while(!winner(pb->bb[0]) && !winner(pb->bb[1]) && pb->counter < 42);
 
 }

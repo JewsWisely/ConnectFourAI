@@ -4,7 +4,7 @@
 #include "BoardAI.h"
 #include "Board.h"
 
-static float minimax(Board* pb, short depth, float alpha, float beta, time_t t0);
+static float minimax(Board* pb, short depth, float alpha, float beta);
 
 //static short getMoves(Board* pb, short* moves);
 
@@ -22,12 +22,7 @@ short winsPerSlot[row][col] = {{3, 4, 5, 7, 5, 4, 3},
                         {3, 4, 5, 7, 5, 4, 3}};
 
 int winValue = 1000;
-
-
-
-//how many seconds the AI has to think
-//MUST be >= 1
-short timeToThink = 5;
+short* moves = malloc(col * sizeof(short));
 
 
 /**
@@ -50,9 +45,17 @@ short makeAIMove(Board* pb){
     //retrieve the set of all possible moves and store them in moves
     //moves is dynamically allocated and initialized with size col, then
     //resized based on how many valid moves exist
-    short* moves = malloc(col * sizeof(short));
     short numMoves = listMoves(pb, moves), numUnsolvedMoves = numMoves;
-    moves = realloc(moves, numMoves * sizeof(short));
+    //moves = realloc(moves, numMoves * sizeof(short));
+
+    //t0 is a time marker for the beginning of the function
+    time_t t0 = time(NULL);
+
+    //APPROXIMATELY how many seconds the AI has to think
+    //the real time it takes to think will be greater if it can not search
+    //the entire remaining game tree in less time.
+    //MUST be >= 1
+    short timeToThink = 5;
 
     //keeps track of whether we should exit the loop, whether because
     //the time has expired, there is only one move left, or a win is found
@@ -63,10 +66,6 @@ short makeAIMove(Board* pb){
     //certain column is known (solved), meaning we know who will win if we play
     //in that column
     short solvedColumns[col] = {0};
-
-
-    //t0 is a time marker for the beginning of the function
-    time_t t0 = time(NULL);
 
     //begin the search at depth 1 and increase depth until maxDepth is reached.
     //this is called iterative deepening, and it allows for some optimizations of
@@ -80,9 +79,9 @@ short makeAIMove(Board* pb){
         //the best move.
         short tempBestMoveIndex = bestMoveIndex;
         float tempBestMoveValue = !(pb->counter & 1) ? alpha : beta;
-        short i = 0;
+        short i;
 
-        for( ; i < numMoves; i++){
+        for(i = 0; i < numMoves; i++){
             if(time(NULL) - t0 >= timeToThink){
                 timeToStop = true;
                 break;
@@ -96,10 +95,10 @@ short makeAIMove(Board* pb){
                     break;
                 }
                 makeMove(pb, column);
-                float temp = minimax(pb, depth - 1, alpha, beta, t0);
+                float temp = minimax(pb, depth - 1, alpha, beta);
                 undoMove(pb);
 
-                //printf("\n%d: %f", column, temp);
+                printf("\n%d: %f", column, temp);
 
                 if(temp / winValue == (pb->counter & 1 ? -1 : 1)){
                     //printf("\ntemp / winValue == (pb->counter & 1 ? -1 : 1)\n");
@@ -146,22 +145,21 @@ short makeAIMove(Board* pb){
 /**
     return value of a given board state after performing minimax with param depth
 **/
-static float minimax(Board* pb, short depth, float alpha, float beta, time_t t0){
+static float minimax(Board* pb, short depth, float alpha, float beta){
 
-    if(depth <= 0 || time(NULL) - t0 >= timeToThink || winner(pb->bb[0]) || winner(pb->bb[1])){
+    if(depth <= 0 || winner(pb->bb[0]) || winner(pb->bb[1])){
         //printBoard(pb);
         //printf("\n%f\n", staticEvaluation(pb));
         return staticEvaluation(pb);
     }
 
-    short* moves = malloc(col * sizeof(short));
     short numMoves = listMoves(pb, moves);
-    moves = realloc(moves, numMoves * sizeof(short));
+    //moves = realloc(moves, numMoves * sizeof(short));
 
     float guarantee = pb->counter & 1 ? winValue : -winValue;
     for(int i = 0; i < numMoves; i++){
         makeMove(pb, moves[i]);
-        float nextEval = minimax(pb, depth - 1, alpha, beta, t0);
+        float nextEval = minimax(pb, depth - 1, alpha, beta);
         undoMove(pb);
         guarantee = pb->counter & 1 ? min(guarantee, nextEval) : max(guarantee, nextEval);
         if(!(pb->counter & 1))

@@ -5,25 +5,41 @@
 #define row 6
 #define col 7
 
+/*
 typedef enum{
     black = -1, red = 1
 } Player;
+*/
 
+/*
 typedef struct _Board{
     short** board;
     short* top;
     Player player;
 } Board;
+*/
+
+typedef struct _Board{
+    long long int* bb;
+    short* top;
+    short counter;
+    short* history;
+} Board;
+
 
 void createBoard(Board* pb);
 
 void destroyBoard(Board* pb);
 
-bool putPiece(Board* pb, short index);
+void makeMove(Board* pb, short index);
 
-void removePiece(Board* pb, short index);
+void undoMove(Board* pb);
 
-bool winner(Board* pb, short index);
+short listMoves(Board* pb, short* moves);
+
+//bool winner(Board* pb, short index);
+
+bool winner(long long int bb);
 
 bool boundsCheck(short index);
 
