@@ -1,0 +1,127 @@
+# depslib dependency file v1.0
+1598669831 source:c:\users\joela\documents\vt 2020-2021\programming\connect4ai\board.c
+	"Board.h"
+
+1598195067 c:\users\joela\documents\vt 2020-2021\programming\connect4ai\board.h
+	<stdlib.h>
+	<stdbool.h>
+
+1599329840 source:c:\users\joela\documents\vt 2020-2021\programming\connect4ai\main.c
+	<stdio.h>
+	<stdlib.h>
+	"Board.h"
+	"BoardHuman.h"
+	"BoardAI.h"
+
+1598025283 c:\users\joela\documents\vt 2020-2021\programming\connect4ai\boardio.h
+	"Board.h"
+	<stdio.h>
+
+1598028883 source:c:\users\joela\documents\vt 2020-2021\programming\connect4ai\boardio.c
+	"BoardIO.h"
+
+1599331712 source:c:\users\joela\documents\vt 2020-2021\programming\connect4ai\boardhuman.c
+	"BoardIO.h"
+
+1598152756 c:\users\joela\documents\vt 2020-2021\programming\connect4ai\boardhuman.h
+	"Board.h"
+	<stdio.h>
+
+1599332005 source:c:\users\joela\documents\vt 2020-2021\programming\connect4ai\boardai.c
+	<math.h>
+	<time.h>
+	"BoardAI.h"
+	"Board.h"
+
+1598026169 c:\users\joela\documents\vt 2020-2021\programming\connect4ai\boardai.h
+	"Board.h"
+
+1598473045 source:c:\users\joela\documents\vt 2020-2021\programming\connect4ai\hashmap.c
+	"HashMap.h"
+	<stdlib.h>
+
+1598472337 c:\users\joela\documents\vt 2020-2021\programming\connect4ai\hashmap.h
+	"Board.h"
+
+1598669832 source:c:\users\joel\desktop\joel stuff\vt 2020-2021\programming\connect4ai\board.c
+	"Board.h"
+
+1598195068 c:\users\joel\desktop\joel stuff\vt 2020-2021\programming\connect4ai\board.h
+	<stdlib.h>
+	<stdbool.h>
+
+1624344423 source:c:\users\joel\desktop\joel stuff\vt 2020-2021\programming\connect4ai\boardai.c
+	<math.h>
+	<time.h>
+	"BoardAI.h"
+	"Board.h"
+
+1598026170 c:\users\joel\desktop\joel stuff\vt 2020-2021\programming\connect4ai\boardai.h
+	"Board.h"
+
+1599331714 source:c:\users\joel\desktop\joel stuff\vt 2020-2021\programming\connect4ai\boardhuman.c
+	"BoardIO.h"
+
+1598025284 c:\users\joel\desktop\joel stuff\vt 2020-2021\programming\connect4ai\boardio.h
+	"Board.h"
+	<stdio.h>
+
+1598473046 source:c:\users\joel\desktop\joel stuff\vt 2020-2021\programming\connect4ai\hashmap.c
+	"HashMap.h"
+	<stdlib.h>
+
+1598472338 c:\users\joel\desktop\joel stuff\vt 2020-2021\programming\connect4ai\hashmap.h
+	"Board.h"
+
+1599329842 source:c:\users\joel\desktop\joel stuff\vt 2020-2021\programming\connect4ai\main.c
+	<stdio.h>
+	<stdlib.h>
+	"Board.h"
+	"BoardHuman.h"
+	"BoardAI.h"
+
+1598152758 c:\users\joel\desktop\joel stuff\vt 2020-2021\programming\connect4ai\boardhuman.h
+	"Board.h"
+	<stdio.h>
+
+1630605495 source:c:\users\joela\desktop\connect4ai-20210902t175740z-001\connect4ai\board.c
+	"Board.h"
+
+1630605495 c:\users\joela\desktop\connect4ai-20210902t175740z-001\connect4ai\board.h
+	<stdlib.h>
+	<stdbool.h>
+
+1630605495 source:c:\users\joela\desktop\connect4ai-20210902t175740z-001\connect4ai\boardhuman.c
+	"BoardIO.h"
+
+1630605495 c:\users\joela\desktop\connect4ai-20210902t175740z-001\connect4ai\boardio.h
+	"Board.h"
+	<stdio.h>
+
+1630605495 source:c:\users\joela\desktop\connect4ai-20210902t175740z-001\connect4ai\hashmap.c
+	"HashMap.h"
+	<stdlib.h>
+
+1630605495 c:\users\joela\desktop\connect4ai-20210902t175740z-001\connect4ai\hashmap.h
+	"Board.h"
+
+1630605495 source:c:\users\joela\desktop\connect4ai-20210902t175740z-001\connect4ai\main.c
+	<stdio.h>
+	<stdlib.h>
+	"Board.h"
+	"BoardHuman.h"
+	"BoardAI.h"
+
+1630605495 c:\users\joela\desktop\connect4ai-20210902t175740z-001\connect4ai\boardhuman.h
+	"Board.h"
+	<stdio.h>
+
+1630605495 c:\users\joela\desktop\connect4ai-20210902t175740z-001\connect4ai\boardai.h
+	"Board.h"
+
+1630605712 source:c:\users\joela\desktop\connect4ai-20210902t175740z-001\connect4ai\boardai.c
+	<math.h>
+	<time.h>
+	"BoardAI.h"
+	"Board.h"
+
