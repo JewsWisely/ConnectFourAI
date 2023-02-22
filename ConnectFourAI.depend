@@ -1,0 +1,21 @@
+# depslib dependency file v1.0
+1597518338 source:c:\users\joel\desktop\summer 2020 semester\cs2505\c_programs\connectfourai\main.c
+	<stdio.h>
+	<stdlib.h>
+	"Board.h"
+
+1597518586 c:\users\joel\desktop\summer 2020 semester\cs2505\c_programs\connectfourai\board.h
+	<stdio.h>
+	<stdlib.h>
+	<stdbool.h>
+
+1597518700 source:c:\users\joel\desktop\joel stuff\connectfourai\main.c
+	<stdio.h>
+	<stdlib.h>
+	"Board.h"
+
+1597518588 c:\users\joel\desktop\joel stuff\connectfourai\board.h
+	<stdio.h>
+	<stdlib.h>
+	<stdbool.h>
+
