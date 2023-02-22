@@ -1,36 +1,28 @@
-/*
 #ifndef HASHMAP_H_INCLUDED
 #define HASHMAP_H_INCLUDED
-#include "Board.h"
 #define Key long long int
-
-typedef struct HashValue{
-    float depth;
-    float alpha;
-    float beta;
-} HashValue;
+#include <stdlib.h>
+#include <stdio.h>
 
 typedef struct HashEntry{
     Key key;
-    HashValue value;
+    void* value;
 } HashEntry;
 
 typedef struct HashMap{
-    int maxSize;
-    int currSize;
-    long long int* zobristValues;
-    HashEntry* entries;
-} HashMap;
+    int n_elems;
+    int size;
+    HashEntry** entries;
+}HashMap;
 
-void createHashMap(HashMap* hmap, int initKB, int maxKB);
+void printEntry(HashEntry* entry);
+
+void createHashMap(HashMap* hmap, int n_elems);
+
+float hashAdd(HashMap* hmap, HashEntry* entry);
+
+void* hashGet(HashMap* hmap, Key key);
 
 void destroyHashMap(HashMap* hmap);
 
-Key createKey(HashMap* hmap, Board* pb);
-
-HashValue createValue(float depth, float alpha, float beta);
-
-HashEntry createEntry(Key key, HashValue value);
-
 #endif // HASHMAP_H_INCLUDED
-*/

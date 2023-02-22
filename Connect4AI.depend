@@ -86,3 +86,52 @@
 	"Board.h"
 	<stdio.h>
 
+1632943024 source:c:\users\joela\desktop\connect4ai v3\board.c
+	"Board.h"
+
+1630436408 c:\users\joela\desktop\connect4ai v3\board.h
+	<stdlib.h>
+	<stdbool.h>
+
+1633032238 source:c:\users\joela\desktop\connect4ai v3\boardai.c
+	<math.h>
+	<time.h>
+	<stdio.h>
+	"BoardAI.h"
+
+1632348934 c:\users\joela\desktop\connect4ai v3\boardai.h
+	"Board.h"
+	"HashMap.h"
+	"ZobristHash.h"
+
+1630440117 source:c:\users\joela\desktop\connect4ai v3\boardhuman.c
+	"BoardIO.h"
+
+1598028883 c:\users\joela\desktop\connect4ai v3\boardio.h
+	"Board.h"
+	<stdio.h>
+
+1632345051 source:c:\users\joela\desktop\connect4ai v3\hashmap.c
+	"HashMap.h"
+
+1632337795 c:\users\joela\desktop\connect4ai v3\hashmap.h
+	<stdlib.h>
+	<stdio.h>
+
+1633032486 source:c:\users\joela\desktop\connect4ai v3\main.c
+	<stdio.h>
+	<stdlib.h>
+	"Board.h"
+	"BoardHuman.h"
+	"BoardAI.h"
+
+1598156356 c:\users\joela\desktop\connect4ai v3\boardhuman.h
+	"Board.h"
+	<stdio.h>
+
+1632344814 source:c:\users\joela\desktop\connect4ai v3\zobristhash.c
+	"ZobristHash.h"
+	<stdlib.h>
+
+1632337873 c:\users\joela\desktop\connect4ai v3\zobristhash.h
+

@@ -1,71 +1,100 @@
-/*
 #include "HashMap.h"
-#include <stdlib.h>
-#include <stdio.h>
 
+/**
 
-void createHashMap(HashMap* hmap, int initKB, int maxKB){
-    hmap->zobristValues = malloc(row * col * 3 * sizeof(long long int));
-    srand(time(0));
-    for(int r = 0; r < row; r++){
-        for(int c = 0; c < col; c++){
-            for(int d = 0; d < 2; d++){
-                hmap->zobristValues[d + c * 2 + r * 2 * col] = ((long long int)rand() << 31 & rand()) | 0b0000001000000100000010000001000000100000010000001000000000000000;
-                for(int i = 0; i < 64; i++){
-                    printf("%d", hmap->zobristValues[d + c * 2 + r * 2 * col] >> i & 1);
+    initialize the elements of the supplied hmap
+
+**/
+void createHashMap(HashMap* hmap, int n_elems){
+
+    hmap->n_elems = n_elems;
+    hmap->entries = calloc(n_elems, sizeof(HashEntry*));
+    hmap->size = 0;
+
+}
+
+/**
+
+    if hmap has no entry with given key, add it in,
+    use linear probing to handle collisions,
+    return the load factor of hmap
+
+**/
+float hashAdd(HashMap* hmap, HashEntry* entry){
+
+    if(hmap->size > hmap->n_elems){
+        printf("critical error: hmap->size > hmap->n_elems");
+        return -1;
+    }
+    else if(hmap->size == hmap->n_elems){
+        printf("can not add error: hmap is full");
+        return 1.0f;
+    }
+
+    if(hmap->entries[entry->key % hmap->n_elems] == NULL){
+        hmap->entries[entry->key % hmap->n_elems] = entry;
+    }
+    else{
+        for(int i = 0; i < hmap->n_elems; i++){
+            HashEntry* thing = hmap->entries[(entry->key + i) % hmap->n_elems];
+            if(thing != NULL){
+                if(thing->key == entry->key){
+                    //duplicate key is a problem, return without adding entry
+                    return ((float)++hmap->size) / hmap->n_elems;
                 }
+            }
+            else{
+                hmap->entries[(entry->key + i) % hmap->n_elems] = entry;
+                break;
             }
         }
     }
-
-    hmap->maxSize = 1024 * maxKB / sizeof(Key);
-    hmap->currSize = 1024 * initKB / sizeof(Key);
-    hmap->entries = malloc(hmap->currSize * sizeof(HashEntry));
-}
-
-void destroyHashMap(HashMap* hmap){
-
-    free(hmap->zobristValues);
-    free(hmap->values);
-    hmap->currSize = 0;
-    hmap->maxSize = 0;
+    return ((float)++hmap->size) / hmap->n_elems;
 
 }
 
-Key createKey(HashMap* hmap, Board* pb){
-    Key key = 0;
-    for(int c = 0; c < col * col; c += col){
-        for(int r = 0; r < pb->top[c / col] - c; r++){
-            if(pb->bb[0] >> (r + c) & 1)
-                key ^= hmap->zobristValues[c + r];
-            else if(pb->bb[1] >> (r + c) & 1)
-                key ^= hmap->zobristValues[c + r + 1];
+
+/**
+
+    return pointer to value of entry for given key,
+    or NULL if entry with given key isn't found
+
+**/
+void* hashGet(HashMap* hmap, Key key){
+
+    for(int i = 0; i < hmap->n_elems; i++){
+        if(hmap->entries[(key + i) % hmap->n_elems] != NULL){
+            return hmap->entries[(key + i) % hmap->n_elems]->value;
         }
     }
-    return key;
+    return NULL;
+
 }
 
-HashValue createValue(float depth, float alpha, float beta){
-    HashValue value = {depth, alpha, beta};
-    return value;
-}
+/**
 
-HashEntry createEntry(Key key, HashValue value){
-    HashEntry entry = {key, value};
-    return entry;
-}
+    free all dynamic memory in the hmap and
+    reset all of its other fields
 
-void put(HashMap* hmap, HashEntry entry){
+**/
+void destroyHashMap(HashMap* hmap){
 
-    int position = entry.key % hmap->currSize;
-    if(hmap->entries[position] != NULL){
-
+    //printf("\ndestroying hash map...");
+    for(int i = 0; i < hmap->n_elems; i++){
+        if(hmap->entries[i] != NULL){
+            free(hmap->entries[i]->value);
+            free(hmap->entries[i]);
+        }
     }
+    free(hmap->entries);
 
+    hmap->n_elems = 0;
+    hmap->size = 0;
+    //printf(" Success!\n");
 }
 
+void printEntry(HashEntry* entry){
 
-void get(Key key){
+    printf("{key: %d, value: %p}\n", entry->key, entry->value);
 
 }
-*/
